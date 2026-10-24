@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tiket Menuju Kamu 💖</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+:root{--ink:#4a1d3f;--rose:#e0487f;--pink:#ff8fb8;--paper:#fff7ee;--sky1:#2b1b5a;--sky2:#c2477f;--sky3:#ffb38a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Nunito',sans-serif;font-weight:600;color:var(--ink);background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%,var(--sky3));background-attachment:fixed;overflow:hidden;-webkit-tap-highlight-color:transparent}
+h1,h2,.script{font-family:'Pacifico',cursive;font-weight:400}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.hidden{display:none!important}
+.screen:not(.hidden){animation:fin .6s ease both}
+@keyframes fin{from{opacity:0}}
+.fly{position:fixed;top:44%;left:-70px;font-size:46px;z-index:200;pointer-events:none;animation:flyby .85s ease-in-out forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+@keyframes flyby{to{transform:translate(calc(100vw + 140px),-50px) rotate(-6deg)}}
+#ffs{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.ff{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff6c9;box-shadow:0 0 10px 3px rgba(255,240,170,.7);animation:ffm ease-in-out infinite}
+@keyframes ffm{0%,100%{transform:translate(0,0);opacity:.15}50%{transform:translate(var(--x),var(--y));opacity:.9}}
+.btn{background:linear-gradient(45deg,var(--rose),var(--pink));color:#fff;border:0;border-radius:40px;padding:14px 32px;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.25);transition:transform .2s}
+.btn:hover{transform:scale(1.05)}
+.btn.ghost{background:rgba(255,255,255,.2);box-shadow:none;border:2px solid rgba(255,255,255,.6)}
+#audio{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:50;padding:8px 16px;font-size:.9rem}
+
+/* Tiket */
+.ticket{width:min(92vw,520px);position:relative;animation:print 1.3s .15s cubic-bezier(.2,.9,.3,1) both}
+@keyframes print{from{transform:translateY(110vh)}to{transform:none}}
+.tk-a{background:var(--paper);border-radius:18px 18px 0 0;overflow:hidden;box-shadow:0 -6px 30px rgba(0,0,0,.2)}
+.tk-b{background:var(--paper);border-radius:0 0 18px 18px;position:relative;box-shadow:0 20px 40px rgba(0,0,0,.3);padding-top:14px;margin-top:-1px}
+.tk-b .cut{margin:-14px 14px 0}
+.barcode{flex-basis:100%;height:34px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 10px,var(--ink) 10px 13px,transparent 13px 15px);opacity:.85;border-radius:2px}
+.ticket.tear .tk-b{animation:tearB .9s ease-in forwards}
+.ticket.tear .tk-a{animation:tearA .9s .35s ease-in forwards}
+@keyframes tearB{20%{transform:translateY(6px) rotate(3deg)}to{transform:translate(120px,110vh) rotate(24deg)}}
+@keyframes tearA{to{transform:translate(-80px,-110vh) rotate(-12deg)}}
+.ticket .top{background:var(--rose);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;font-weight:800}
+.ticket .body{padding:24px 22px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.city b{display:block;font-family:'Pacifico';font-weight:400;font-size:1.9rem;color:var(--rose);line-height:1.1}
+.city small{opacity:.7}
+.plane{font-size:2rem;animation:fly 2.4s ease-in-out infinite}
+@keyframes fly{50%{transform:translateX(10px) translateY(-6px)}}
+.ticket .cut{border-top:3px dashed #e8c9bd;margin:0 14px;position:relative}
+.ticket .cut:before,.ticket .cut:after{content:"";position:absolute;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--sky2)}
+.ticket .cut:before{left:-26px}.ticket .cut:after{right:-26px}
+.ticket .foot{padding:16px 22px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.ticket .foot span{font-size:.9rem}
+
+/* Game */
+#score{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:12px;background:rgba(255,255,255,.9);color:var(--rose);padding:8px 18px;border-radius:20px;font-weight:800;z-index:40}
+#skip{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:40}
+#game h2{color:#fff;position:fixed;top:70px;font-size:1.3rem;text-align:center;padding:0 16px;pointer-events:none}
+.heart{position:absolute;font-size:44px;cursor:pointer;user-select:none;touch-action:manipulation;animation:fall linear forwards;filter:drop-shadow(0 0 6px rgba(255,255,255,.6))}
+@keyframes fall{to{transform:translateY(110vh)}}
+.pop{position:fixed;pointer-events:none;animation:pop .5s ease-out forwards;z-index:60}
+@keyframes pop{to{transform:translate(var(--dx),var(--dy)) scale(.4);opacity:0}}
+
+/* Loading */
+.bar{width:min(80vw,340px);height:14px;background:rgba(255,255,255,.3);border-radius:20px;position:relative;margin-bottom:26px}
+.bar i{display:block;height:100%;width:0;background:#fff;border-radius:20px}
+.bar span{position:absolute;top:-20px;left:0;font-size:32px;transform:translateX(-50%)}
+#ltext{color:#fff;font-family:'Pacifico';font-size:1.3rem;text-align:center;min-height:36px}
+
+/* Perjalanan */
+#journey{justify-content:flex-start;padding-top:calc(30px + env(safe-area-inset-top,0px))}
+#journey h1{color:#fff;font-size:2.2rem;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.counter{background:var(--paper);border-radius:18px;padding:16px 22px;margin:18px 0 8px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25);width:min(92vw,520px)}
+.counter .n{font-family:'Pacifico';font-size:1.6rem;color:var(--rose)}
+.counter small{display:block;margin-top:4px;opacity:.75}
+.tl{width:min(92vw,520px);margin:18px 0;position:relative;padding-left:28px}
+.tl:before{content:"";position:absolute;left:9px;top:6px;bottom:6px;border-left:3px dashed rgba(255,255,255,.6)}
+.stop{background:var(--paper);border-radius:14px;padding:14px 16px;margin-bottom:16px;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.2);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+.stop.in{opacity:1;transform:none}
+.stop:before{content:"✈";position:absolute;left:-28px;top:14px;font-size:14px;color:#fff;transform:rotate(90deg)}
+.stop b{color:var(--rose)}
+.stop em{display:block;font-style:normal;font-size:.8rem;opacity:.65;margin-bottom:4px}
+.ph{overflow:hidden;border-radius:10px;margin-top:10px;height:200px}
+.ph img{width:100%;height:270px;margin-top:-35px;object-fit:cover;display:block;will-change:transform}
+
+/* Surat */
+.paper{background:var(--paper);border-radius:6px;width:min(92vw,460px);max-height:62vh;overflow-y:auto;padding:26px 24px;box-shadow:0 18px 40px rgba(0,0,0,.35);transform:rotate(-1deg)}
+.paper h2{color:var(--rose);font-size:1.7rem;margin-bottom:12px}
+.paper p{line-height:1.7;margin-bottom:10px}
+#cursor{display:inline-block;width:2px;height:1em;background:var(--rose);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#vidbox{margin-top:16px}
+#vidbox video{width:100%;border-radius:12px;max-height:320px;background:#000}
+
+/* Langit */
+#sky{background:radial-gradient(ellipse at 50% 30%,#2a2160,#0b0820 70%);padding:0;touch-action:none}
+#skyc{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#skyhint{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;color:#fff;padding:0 24px;pointer-events:none;opacity:.9}
+#skyend{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;color:#fff;padding:0 24px}
+#skyend p{font-family:'Pacifico';font-size:1.25rem;line-height:1.5;max-width:340px}
+/* Kebun */
+#garden{justify-content:flex-start;padding-top:calc(60px + env(safe-area-inset-top,0px))}
+#ginfo{color:#fff;text-align:center;margin:8px 0 12px;min-height:44px;max-width:340px}
+#tray{display:flex;gap:10px;margin-bottom:12px;min-height:56px}
+.seed{font-size:30px;background:rgba(255,255,255,.25);border:2px solid transparent;border-radius:14px;width:54px;height:54px;cursor:pointer;transition:transform .15s}
+.seed.sel{border-color:#fff;background:rgba(255,255,255,.5);transform:scale(1.12)}
+#field{position:relative;width:min(92vw,520px);height:42vh;min-height:260px;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0))}
+#soil{position:absolute;left:0;right:0;bottom:0;height:64px;border-radius:0 0 18px 18px;background:#6b3f2a;box-shadow:inset 0 8px 0 #8a5a3c}
+.plant{position:absolute;bottom:52px;transform:translateX(-50%);font-size:44px;line-height:1;cursor:pointer;filter:drop-shadow(0 0 8px rgba(255,255,255,.4))}
+.plant.bloom{animation:fl 2.4s ease-in-out infinite}
+.drop{position:absolute;pointer-events:none;animation:pop .5s ease-out forwards}
+#bubble{position:absolute;z-index:5;background:var(--paper);color:var(--ink);border-radius:14px;padding:10px 14px;max-width:210px;font-size:.9rem;line-height:1.4;box-shadow:0 8px 20px rgba(0,0,0,.3);transform:translateX(-50%)}
+.bfly{position:fixed;font-size:28px;pointer-events:none;animation:bf 7s ease-in-out infinite;z-index:30}
+@keyframes bf{0%,100%{transform:translate(0,0)}25%{transform:translate(60px,-80px)}50%{transform:translate(-40px,-140px)}75%{transform:translate(50px,-60px)}}
+#final{overflow:hidden}
+#final .fc{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none;text-shadow:0 2px 14px rgba(0,0,0,.55)}
+#final h1{color:#fff;font-size:2rem;text-align:center;margin-top:6px}
+#final .fc p,#final .fc small{color:#fff;text-align:center;max-width:340px;margin-top:10px}
+#final .fc small{opacity:.8;font-size:.8rem}
+#final .big{font-size:96px;animation:fl 3s ease-in-out infinite}
+#rain{position:absolute;inset:0;z-index:1;overflow:hidden}
+.pol{position:absolute;bottom:-340px;border:6px solid #fff;border-bottom-width:22px;border-radius:4px;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;animation:rise linear forwards;transform:rotate(var(--r))}
+@keyframes rise{from{transform:translateY(0) rotate(var(--r))}to{transform:translateY(calc(-100vh - 700px)) rotate(var(--r))}}
+#rain.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;padding:300px 14px 20px;overflow-y:auto;align-content:start}
+#rain.grid .pol{position:static;width:100%;animation:none;transform:none}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+#lb img{max-width:92vw;max-height:86vh;border-radius:8px}
+@keyframes fl{50%{transform:translateY(-14px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="ffs"></div>
+
+<audio id="music" loop><source src="Shape Of My Heart.mp3" type="audio/mpeg"></audio>
+<button id="audio" class="btn ghost">🎵 Putar Musik</button>
+
+<!-- 1. Tiket -->
+<section id="landing" class="screen">
+  <div class="ticket" id="ticket">
+    <div class="tk-a">
+      <div class="top"><span>BOARDING PASS</span><span id="annivLabel"></span></div>
+      <div class="body">
+        <div class="city"><b id="from"></b><small>kota kamu</small></div>
+        <div class="plane">✈️</div>
+        <div class="city" style="text-align:right"><b id="to"></b><small>kota aku</small></div>
+      </div>
+    </div>
+    <div class="tk-b">
+      <div class="cut"></div>
+      <div class="foot">
+        <span>Penumpang<br><b id="pax"></b></span>
+        <button class="btn" onclick="tearTicket()">Check-in 💖</button>
+        <div class="barcode"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Game -->
+<section id="game" class="screen hidden">
+  <div id="score">💖 <span id="sc">0</span> / 100</div>
+  <h2>Kumpulin love buat naik pesawat!</h2>
+  <button id="skip" class="btn ghost hidden" onclick="endGame()">Lewati ➜</button>
+</section>
+
+<!-- 3. Loading -->
+<section id="loading" class="screen hidden">
+  <div class="bar"><i id="lfill"></i><span id="lheart">✈️</span></div>
+  <div id="ltext"></div>
+</section>
+
+<!-- 4. Perjalanan -->
+<section id="journey" class="screen hidden">
+  <h1>Perjalanan Kita</h1>
+  <div class="counter">
+    <div class="n" id="cdays"></div>
+    <small id="chms"></small>
+    <small>sudah kita lewati bersama, lewat layar 💞</small>
+  </div>
+  <div class="tl" id="tl"></div>
+  <button class="btn" onclick="show('letter');typeLetter()" style="margin:10px 0 40px">Ada surat buat kamu 💌</button>
+</section>
+
+<!-- 5. Surat + video -->
+<section id="letter" class="screen hidden">
+  <div class="paper" id="paper">
+    <h2 id="ltitle"></h2>
+    <div id="ltextbody"></div><span id="cursor"></span>
+    <div id="vidbox" class="hidden">
+      <p style="font-size:.9rem;margin-bottom:6px">Satu hal lagi buat kamu 🎬</p>
+      <video id="vid" controls playsinline preload="metadata"></video>
+    </div>
+  </div>
+  <button id="toGarden" class="btn hidden" onclick="enterSky()" style="margin-top:18px">Masih ada satu kado lagi 🎁</button>
+  <button id="skipType" class="btn ghost" onclick="finishTyping()" style="margin-top:18px;padding:8px 18px;font-size:.85rem">Tampilkan semua</button>
+</section>
+
+<!-- 5b. Langit -->
+<section id="sky" class="screen hidden">
+  <canvas id="skyc"></canvas>
+  <div id="skyhint">Sentuh bintang yang berkedip, lalu sambungkan dengan jarimu</div>
+  <div id="skyend" class="hidden">
+    <p id="skytxt"></p>
+    <button class="btn" onclick="leaveSky()">Lanjut ke kebun 🌱</button>
+  </div>
+</section>
+
+<!-- 6. Kebun -->
+<section id="garden" class="screen hidden">
+  <h2 class="script" style="color:#fff;font-size:1.8rem">Kebun Kita 🌱</h2>
+  <p id="ginfo">Pilih satu biji, lalu sentuh tanah untuk menanamnya.</p>
+  <div id="tray"></div>
+  <div id="field"><div id="soil"></div></div>
+  <button id="toBouquet" class="btn hidden" onclick="done()" style="margin-top:18px">Rangkai jadi bouquet 💐</button>
+</section>
+
+<!-- 7. Penutup -->
+<section id="final" class="screen hidden">
+  <div id="rain"></div>
+  <div class="fc">
+    <div class="big">💐</div>
+    <h1>Selamat Anniversary, <span id="name2"></span>!</h1>
+    <p>Terima kasih sudah jadi rumah buat aku, bahkan dari jauh.</p>
+    <small>Sentuh foto untuk memperbesar</small>
+  </div>
+</section>
+<div id="lb" class="hidden" onclick="this.classList.add('hidden')"><img id="lbimg" alt=""></div>
+
+<script>
+/* ============ ISI BAGIAN INI ============ */
+const CONFIG = {
+  nama: "Nabela",
+  kotaKamu: "Palembang",        // kota dia
+  kotaAku: "Surabaya",          // kota kamu
+  labelAnniv: "Anniv ke-1",     // teks kecil di pojok tiket
+  mulai: "2025-10-25T00:00:00", // TANGGAL JADIAN (format: tahun-bulan-tanggalTjam)
+  video: "video.mp4",           // video beberapa detik tentang dia (taruh di folder yang sama)
+  musik: "Shape Of My Heart.mp3",
+  foto: [                       // SEMUA foto dia untuk galeri tanpa akhir (sesuaikan nama file)
+    "1.jpeg","2.jpeg","3.jpeg","4.jpeg","5.jpeg","6.jpeg","7.jpg",
+    "8.jpg","9.jpg","10.jpg","11.jpg","12.jpg","13.jpg", "14.jpg", 
+    "15.webp", "16.webp", "17.jpeg", "18.jpeg", "19.jpeg", "20.jpeg",
+    "21.jpeg", "22.jpeg", "23.jpeg", "24.jpeg", "25.jpeg", "26.jpeg",
+    "27.jpeg", "28.jpeg", "29.jpeg", "30.jpeg", "31.jpeg", "32.jpeg",
+    "33.jpeg", "34.jpeg", "35.jpeg", "36.jpeg", "37.jpeg", "38.jpeg",
+    "39.jpeg", "40.jpeg", "41.jpeg", "42.jpeg", "43.jpeg", "44.jpeg",
+    "45.jpeg", "46.jpeg", "47.jpeg", "48.jpeg", "49.jpeg", "50.jpeg",
+    "51.jpeg", "52.jpeg", "53.jpeg", "54.jpeg", "55.jpeg", "56.jpeg",
+    "57.jpeg", "58.jpeg", "59.jpeg", "60.jpeg", "61.jpeg", "62.jpeg",
+    "63.jpeg", "64.jpeg", "65.jpeg", "66.jpeg"
+  ],
+  momen: [                      // ganti sesuai momen kalian; foto boleh dikosongkan ("")
+    {tgl:"Tanggal 18-08-2025", judul:"Awal kita bertemu", teks:"Awalnya cuma mau cerita, siapa sangka jadi begini.", foto:"18-08-2025.png"},
+    {tgl:"Tanggal 08-09-2025", judul:"Moment Mabar", teks:"Mungkin kita gatau kalau ini bukan dari awal yang luar biasa.", foto:"08-09-2025.png"},
+    {tgl:"Tanggal 06-02-2026", judul:"Hampir tiap hari kita bersama", teks:"senang tiap lihat kamu bahagia.", foto:"06-02-2026.png"},
+    {tgl:"Tanggal 25-10-2025", judul:"Hari kita jadian", teks:"Hari yang bikin semuanya terasa lebih berarti.", foto:""},
+    {tgl:"Tiap malam", judul:"Sebelum tidur, Mas Selalu nunggu", teks:"Sampai suara napas kamu pelan-pelan nyenyak, biar kamu ga ngerasa ditinggal.", foto:""}
+  ],
+  bunga: [                      // satu bunga = satu pesan kecil, ganti sesukamu
+    {emoji:"🌷", pesan:"Terima kasih sudah sabar menungguku."},
+    {emoji:"🌻", pesan:"Senyum kamu di layar kecil ini cukup bikin hariku cerah."},
+    {emoji:"🌹", pesan:"Aku bangga sama kamu, lebih dari yang kamu tahu."},
+    {emoji:"🌸", pesan:"Apa pun yang terjadi, aku mau terus belajar sayang sama kamu."},
+    {emoji:"🌼", pesan:"Kita jalani pelan-pelan, bareng-bareng."}
+  ],
+  langit: "Di mana pun kamu berada, kita tetap melihat langit yang sama.",
+  suratJudul: "Selamat Anniversary, kesayanganku 💖",
+  surat: [
+    "Selamat Anniversary, Adekku tersayang🤍",
+    "Gak terasa ya, waktu berjalan begitu cepat dan hari ini kita sampai di titik ini. Mas mau bilang terima kasih banyak ya, sayangg. Terima kasih sudah mau bertahan, saling percaya, dan mau terus berjuang bareng Mas melewati jarak yang memisahkan kita selama ini",
+    "Mas tahu, hubungan LDR itu nggak pernah mudah. Ada hari-hari di mana kita cuma bisa menahan kangen, cuma bisa bertukar kabar lewat layar, dan kadang ada rasa cemas yang hadir. Tapi bareng adek, semua perjuangan dan rasa sabar itu selalu sepadan. Cara Adek mencintai Mas, ketulusan Adek, perhatian-perhatian kecil Adek, sampai semua usaha Adek selama ini selalu berhasil bikin Mas merasa jadi laki-laki paling beruntung",
+    "Terima kasih ya sudah jadi 'Adek'-nya Mas yang paling mengerti, yang selalu jadi tempat Mas pulang, dan yang selalu ada di setiap fase perjalanan hidup Mas. Dari masa-masa kita berjuang, pas Mas tinggal KKN jadi jarang komunikasi, sampai detik ini, kehadiran Adek adalah hal terbaik yang pernah hadir di hidup Mas",
+    "Di hari anniversary kita ini, doa Mas masih tetap sama: semoga kita selalu diberi kesabaran, dikuatkan komitmennya, dilancarkan semua urusan dan rezeki kita, sampai nanti waktunya kita nggak perlu berpisah oleh jarak lagi. Mas mau terus menua sama Adek, mewujudkan satu per satu mimpi dan rumah impian yang sering kita bahas",
+    "Happy Anniversary, my favorite person. Mas sayang banget sama Adek, hari ini, besok, dan seterusnya❤️"
+  ]
+};
+/* ======================================== */
+
+const $=id=>document.getElementById(id);
+const music=$('music');
+music.querySelector('source').src=CONFIG.musik;music.load();
+$('from').textContent=CONFIG.kotaKamu;$('to').textContent=CONFIG.kotaAku;
+$('pax').textContent=CONFIG.nama;$('annivLabel').textContent=CONFIG.labelAnniv;
+$('name2').textContent=CONFIG.nama;$('ltitle').textContent=CONFIG.suratJudul;
+
+$('audio').onclick=()=>{ if(music.paused){music.play().catch(()=>{});$('audio').textContent='⏸️ Jeda'} else {music.pause();$('audio').textContent='🎵 Putar Musik'} };
+
+function _show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));$(id).classList.remove('hidden')}
+function show(id){
+  const f=document.createElement('div');f.className='fly';f.textContent='✈️';document.body.appendChild(f);
+  setTimeout(()=>_show(id),380);setTimeout(()=>f.remove(),900);
+}
+
+/* Suara kecil (WebAudio, tanpa file) */
+let ac;
+function sfx(k,n){
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')ac.resume();
+    const t=ac.currentTime;
+    const tone=(f,d,at=0,v=.06)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;
+      g.gain.setValueAtTime(0,t+at);g.gain.linearRampToValueAtTime(v,t+at+.02);g.gain.exponentialRampToValueAtTime(.0001,t+at+d);
+      o.connect(g);g.connect(ac.destination);o.start(t+at);o.stop(t+at+d+.05)};
+    if(k==='tap')tone(880+Math.random()*220,.16);
+    else if(k==='plant')tone(220,.2,0,.08);
+    else if(k==='water')tone(520,.08,0,.03);
+    else if(k==='bloom')[523,659,784,1047].forEach((f,i)=>tone(f,.4,i*.09,.07));
+    else if(k==='chime')tone(520*Math.pow(1.09,n),.5,0,.07);
+    else if(k==='finish')[659,784,988,1319].forEach((f,i)=>tone(f,.7,i*.12,.07));
+    else if(k==='tear'){
+      const b=ac.createBuffer(1,ac.sampleRate*.5,ac.sampleRate),d=b.getChannelData(0);
+      for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+      const src=ac.createBufferSource();src.buffer=b;const fl=ac.createBiquadFilter();fl.type='highpass';fl.frequency.value=1800;
+      const g=ac.createGain();g.gain.value=.12;src.connect(fl);fl.connect(g);g.connect(ac.destination);src.start(t);
+    }
+  }catch(e){}
+}
+function confettiBurst(){const c=['#e0487f','#ff8fb8','#ffd1e1','#ffffff'];confetti({particleCount:140,spread:90,origin:{y:.6},colors:c,zIndex:9999});setTimeout(()=>confetti({particleCount:90,spread:120,origin:{y:.5},colors:c,zIndex:9999}),250)}
+
+/* Game: 100 love, bisa dilewati setelah 10 */
+let score=0,gInt;
+function tearTicket(){
+  const tk=$('ticket');if(tk.classList.contains('tear'))return;
+  tk.classList.add('tear');sfx('tear');
+  music.play().then(()=>$('audio').textContent='⏸️ Jeda').catch(()=>{});
+  CONFIG.foto.concat(CONFIG.momen.map(m=>m.foto).filter(Boolean)).forEach(f=>{const i=new Image();i.src=f});
+  setTimeout(startGame,1250);
+}
+function startGame(){_show('game');gInt=setInterval(spawn,450)}
+function pop(x,y){for(let i=0;i<7;i++){const p=document.createElement('div');p.className='pop';p.textContent=['💖','✨','💗'][i%3];p.style.left=x+'px';p.style.top=y+'px';p.style.fontSize=(14+Math.random()*14)+'px';const a=Math.random()*6.28,d=30+Math.random()*50;p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',Math.sin(a)*d+'px');document.body.appendChild(p);setTimeout(()=>p.remove(),500)}}
+function spawn(){
+  const h=document.createElement('div');h.className='heart';
+  h.textContent=['💖','💘','💝','💓','💗','🌸'][Math.floor(Math.random()*6)];
+  h.style.left=(Math.random()*82+4)+'vw';h.style.top='-60px';h.style.animationDuration=(Math.random()*2+2.5)+'s';
+  h.addEventListener('pointerdown',e=>{e.preventDefault();pop(e.clientX,e.clientY);sfx('tap');score++;$('sc').textContent=score;h.remove();
+    if(score>=10)$('skip').classList.remove('hidden');
+    if(score>=100)endGame()});
+  $('game').appendChild(h);setTimeout(()=>h.remove(),5200);
+}
+function endGame(){
+  clearInterval(gInt);document.querySelectorAll('.heart').forEach(h=>h.remove());
+  show('loading');
+  const t=[[1,"Menyiapkan penerbangan... 🛫"],[30,"Mengumpulkan rindu yang berserakan... 🥺"],[60,"Melewati awan-awan kenangan... ☁️"],[85,"Sebentar lagi sampai... 🚀"]];
+  let p=0;const iv=setInterval(()=>{p++;$('lfill').style.width=p+'%';$('lheart').style.left=p+'%';
+    const m=t.find(x=>x[0]===p);if(m)$('ltext').textContent=m[1];
+    if(p>=100){clearInterval(iv);startJourney()}},30);
+}
+
+/* Perjalanan */
+function startJourney(){
+  show('journey');
+  $('tl').innerHTML=CONFIG.momen.map(m=>`<div class="stop"><em>${m.tgl}</em><b>${m.judul}</b><div>${m.teks}</div>${m.foto?`<div class="ph"><img src="${m.foto}" alt=""></div>`:''}</div>`).join('');
+  const root=$('journey');
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root,threshold:.15});
+  document.querySelectorAll('.stop').forEach(el=>io.observe(el));
+  let ticking=false;
+  root.addEventListener('scroll',()=>{if(ticking)return;ticking=true;requestAnimationFrame(()=>{
+    const mid=innerHeight/2;
+    document.querySelectorAll('.ph img').forEach(im=>{const r=im.parentNode.getBoundingClientRect();
+      im.style.transform=`translateY(${Math.max(-35,Math.min(35,(r.top+r.height/2-mid)*-.1))}px)`});
+    ticking=false})});
+  const start=new Date(CONFIG.mulai).getTime();
+  const calc=()=>{const s=Math.max(0,Math.floor((Date.now()-start)/1000));return{d:Math.floor(s/86400),h:Math.floor(s%86400/3600),m:Math.floor(s%3600/60),s:s%60}};
+  const live=()=>{const tick=()=>{const c=calc();$('cdays').textContent=c.d+' hari';$('chms').textContent=`${c.h} jam ${c.m} menit ${c.s} detik`};tick();setInterval(tick,1000)};
+  const t0=performance.now(),dur=1800,fin=calc().d;
+  const up=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);
+    $('cdays').textContent=Math.round(fin*e)+' hari';$('chms').textContent=k<1?'menghitung rindu...':'';
+    if(k<1)requestAnimationFrame(up);else live()};
+  requestAnimationFrame(up);
+  confettiBurst();
+}
+
+/* Surat berketik */
+let typed=false,typeTimer,full='';
+function typeLetter(){
+  if(typed)return;typed=true;
+  full=CONFIG.surat.map(p=>'<p>'+p+'</p>').join('');
+  const parts=CONFIG.surat;let pi=0,ci=0;$('ltextbody').innerHTML='';
+  let el=document.createElement('p');$('ltextbody').appendChild(el);
+  typeTimer=setInterval(()=>{
+    if(ci<parts[pi].length){el.textContent+=parts[pi][ci++];$('paper').scrollTop=$('paper').scrollHeight}
+    else{pi++;ci=0;if(pi>=parts.length){finishTyping();return}el=document.createElement('p');$('ltextbody').appendChild(el)}
+  },28);
+}
+function finishTyping(){
+  clearInterval(typeTimer);$('ltextbody').innerHTML=full;$('cursor').remove();
+  $('skipType').classList.add('hidden');
+  const v=$('vid');v.src=CONFIG.video;
+  v.onloadedmetadata=()=>$('vidbox').classList.remove('hidden');
+  v.onerror=()=>$('vidbox').classList.add('hidden');
+  $('toGarden').classList.remove('hidden');confettiBurst();
+}
+
+/* Kebun interaktif: tanam, siram (sentuh atau gesek), mekar, baca pesan */
+let sel=null,planted=0;const NEED=8;
+const field=$('field');let down=false,lastW=0;
+function initGarden(){
+  const tray=$('tray');tray.innerHTML='';
+  CONFIG.bunga.forEach((b,i)=>{
+    const s=document.createElement('button');s.className='seed';s.textContent='🌰';s.dataset.i=i;
+    s.onclick=()=>{document.querySelectorAll('.seed').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');sel=s;$('ginfo').textContent='Sekarang sentuh tanahnya untuk menanam.'};
+    tray.appendChild(s);
+  });
+}
+function plantSeed(e){
+  const r=field.getBoundingClientRect();let x=Math.min(Math.max(e.clientX-r.left,34),r.width-34);
+  if([...document.querySelectorAll('.plant')].some(p=>Math.abs(p.offsetLeft-x)<48)){$('ginfo').textContent='Terlalu dekat, geser sedikit ya 🌱';return}
+  const p=document.createElement('div');p.className='plant';p.textContent='🌱';p.style.left=x+'px';p.dataset.i=sel.dataset.i;p.dataset.w=0;
+  field.appendChild(p);sfx('plant');sel.remove();sel=null;planted++;
+  $('ginfo').textContent='Siram dengan menyentuh atau menggesek jarimu di atasnya 💧';
+}
+function water(p){
+  if(p.classList.contains('bloom'))return;
+  const w=+p.dataset.w+1;p.dataset.w=w;sfx('water');
+  const d=document.createElement('div');d.className='drop';d.textContent='💧';
+  d.style.left=p.offsetLeft+'px';d.style.bottom='112px';
+  d.style.setProperty('--dx',(Math.random()*30-15)+'px');d.style.setProperty('--dy','40px');
+  field.appendChild(d);setTimeout(()=>d.remove(),500);
+  if(w===3){p.textContent='🌿';p.style.fontSize='52px'}
+  if(w>=NEED){
+    p.textContent=CONFIG.bunga[p.dataset.i].emoji;p.style.fontSize='60px';p.classList.add('bloom');sfx('bloom');
+    const b=p.getBoundingClientRect();
+    confetti({particleCount:40,spread:60,origin:{x:b.left/innerWidth,y:b.top/innerHeight},zIndex:9999});
+    $('ginfo').textContent='Mekar! Sentuh bunganya 🌸';
+  }
+}
+function showBubble(p){
+  const old=$('bubble');if(old)old.remove();
+  const b=document.createElement('div');b.id='bubble';b.textContent=CONFIG.bunga[p.dataset.i].pesan;
+  b.style.left=Math.min(Math.max(p.offsetLeft,110),field.clientWidth-110)+'px';b.style.bottom='128px';
+  field.appendChild(b);setTimeout(()=>b.remove(),5000);
+  p.dataset.read=1;
+  if(document.querySelectorAll('.plant[data-read="1"]').length>=CONFIG.bunga.length)allBloomed();
+}
+function allBloomed(){
+  $('toBouquet').classList.remove('hidden');$('ginfo').textContent='Kebunnya sudah penuh. Satu langkah lagi 💐';
+  for(let i=0;i<4;i++){const f=document.createElement('div');f.className='bfly';f.textContent='🦋';
+    f.style.left=(10+Math.random()*75)+'vw';f.style.top=(30+Math.random()*40)+'vh';f.style.animationDelay=(-Math.random()*6)+'s';document.body.appendChild(f)}
+}
+field.addEventListener('pointerdown',e=>{
+  down=true;const pl=e.target.closest('.plant');
+  if(pl){pl.classList.contains('bloom')?showBubble(pl):water(pl);return}
+  if(sel)plantSeed(e);else if(planted<CONFIG.bunga.length)$('ginfo').textContent='Pilih biji dulu di atas ya 🌰';
+});
+field.addEventListener('pointermove',e=>{
+  if(!down)return;const n=Date.now();if(n-lastW<90)return;lastW=n;
+  const el=document.elementFromPoint(e.clientX,e.clientY),pl=el&&el.closest&&el.closest('.plant');
+  if(pl)water(pl);
+});
+['pointerup','pointercancel','pointerleave'].forEach(t=>field.addEventListener(t,()=>down=false));
+function done(){document.querySelectorAll('.bfly').forEach(b=>b.remove());show('final');confettiBurst();startRain()}
+
+/* Galeri tanpa akhir: foto dikocok, habis dikocok lagi, tidak pernah berhenti */
+let pool=[],rainOn=false;
+function nextFoto(){if(!pool.length)pool=CONFIG.foto.slice().sort(()=>Math.random()-.5);return pool.pop()}
+function makePol(src){
+  const c=document.createElement('img');c.className='pol';c.src=src;c.alt='';
+  c.onerror=()=>c.remove();
+  c.onclick=()=>{$('lbimg').src=src;$('lb').classList.remove('hidden')};
+  return c;
+}
+function startRain(){
+  if(rainOn||!CONFIG.foto.length)return;rainOn=true;
+  const rain=$('rain');
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){
+    rain.classList.add('grid');CONFIG.foto.forEach(f=>rain.appendChild(makePol(f)));return;
+  }
+  const spawnPol=()=>{
+    if(document.hidden)return;
+    const c=makePol(nextFoto());
+    c.style.width=(100+Math.random()*60)+'px';
+    c.style.left=(Math.random()*78+2)+'vw';
+    c.style.setProperty('--r',(Math.random()*14-7)+'deg');
+    c.style.animationDuration=(11+Math.random()*5)+'s';
+    c.addEventListener('animationend',()=>c.remove());
+    rain.appendChild(c);
+  };
+  spawnPol();setInterval(spawnPol,1500);
+}
+/* Langit malam: sambungkan bintang membentuk hati */
+let sk,sctx,spts=[],sbg=[],sdone=false,scur=0,sptr=null,sdown=false,sraf=0,sW=0,sH=0,shoot=[],shInt;
+function initSky(){
+  sk=$('skyc');sctx=sk.getContext('2d');
+  const dpr=window.devicePixelRatio||1;sW=innerWidth;sH=innerHeight;
+  sk.width=sW*dpr;sk.height=sH*dpr;sctx.setTransform(dpr,0,0,dpr,0,0);
+  const sc=Math.min(sW,sH*.72)/40,cx=sW/2,cy=sH*.46,N=10;spts=[];
+  for(let i=0;i<N;i++){const t=i*2*Math.PI/N;
+    spts.push({x:cx+16*Math.pow(Math.sin(t),3)*sc,y:cy-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*sc})}
+  spts.push(spts[0]);
+  if(!sbg.length)for(let i=0;i<90;i++)sbg.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.3,p:Math.random()*6.28});
+}
+function skyPos(e){const r=sk.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+function skyHit(p){
+  if(sdone)return;const t=spts[scur];
+  if(Math.hypot(p.x-t.x,p.y-t.y)<38){scur++;sfx('chime',scur);
+    if(scur===1)$('skyhint').textContent='Terus sambungkan sampai kembali ke bintang pertama';
+    if(scur>=spts.length)finishSky()}
+}
+function finishSky(){
+  sdone=true;sdown=false;sfx('finish');$('skyhint').textContent='';
+  $('skytxt').textContent=CONFIG.langit;
+  setTimeout(()=>$('skyend').classList.remove('hidden'),900);
+  shInt=setInterval(()=>shoot.push({x:Math.random()*sW*.6,y:Math.random()*sH*.3,l:0}),1800);
+}
+function drawSky(tm){
+  sctx.clearRect(0,0,sW,sH);sctx.shadowBlur=0;
+  sbg.forEach(s=>{sctx.globalAlpha=.35+.35*Math.sin(tm/900+s.p);sctx.fillStyle='#fff';sctx.beginPath();sctx.arc(s.x*sW,s.y*sH,s.r,0,6.3);sctx.fill()});
+  sctx.globalAlpha=1;
+  if(sdone){sctx.fillStyle='rgba(255,150,190,.16)';sctx.beginPath();spts.forEach((q,i)=>i?sctx.lineTo(q.x,q.y):sctx.moveTo(q.x,q.y));sctx.fill()}
+  sctx.lineCap='round';sctx.lineJoin='round';sctx.shadowColor='#ffb3d1';sctx.shadowBlur=14;sctx.strokeStyle='#ffd1e1';sctx.lineWidth=2.5;
+  if(scur>0){sctx.beginPath();sctx.moveTo(spts[0].x,spts[0].y);
+    for(let i=1;i<scur&&i<spts.length;i++)sctx.lineTo(spts[i].x,spts[i].y);
+    if(sdown&&sptr&&!sdone)sctx.lineTo(sptr.x,sptr.y);sctx.stroke()}
+  const nx=sdone?-1:(scur>=spts.length-1?0:scur);
+  for(let i=0;i<spts.length-1;i++){const q=spts[i],on=sdone||i<scur;
+    sctx.shadowBlur=on?18:0;sctx.fillStyle=on?'#fff':'rgba(255,255,255,.45)';
+    sctx.beginPath();sctx.arc(q.x,q.y,on?6:3.5,0,6.3);sctx.fill();
+    if(i===nx){const k=(Math.sin(tm/300)+1)/2;sctx.shadowBlur=0;sctx.strokeStyle='rgba(255,209,225,'+(.4+.5*k)+')';sctx.lineWidth=2;
+      sctx.beginPath();sctx.arc(q.x,q.y,12+8*k,0,6.3);sctx.stroke();sctx.strokeStyle='#ffd1e1';sctx.lineWidth=2.5}}
+  sctx.shadowBlur=0;
+  shoot=shoot.filter(h=>h.l<60);shoot.forEach(h=>{h.x+=9;h.y+=4;h.l++;
+    sctx.strokeStyle='rgba(255,255,255,'+(1-h.l/60)+')';sctx.lineWidth=2;sctx.beginPath();sctx.moveTo(h.x-45,h.y-20);sctx.lineTo(h.x,h.y);sctx.stroke()});
+}
+function skyLoop(tm){drawSky(tm);sraf=requestAnimationFrame(skyLoop)}
+function enterSky(){
+  show('sky');scur=0;sdone=false;$('skyend').classList.add('hidden');
+  $('skyhint').textContent='Sentuh bintang yang berkedip, lalu sambungkan dengan jarimu';
+  setTimeout(()=>{initSky();cancelAnimationFrame(sraf);skyLoop(0)},400);
+}
+function leaveSky(){cancelAnimationFrame(sraf);clearInterval(shInt);show('garden')}
+(()=>{const c=$('skyc');
+  c.addEventListener('pointerdown',e=>{sdown=true;sptr=skyPos(e);skyHit(sptr)});
+  c.addEventListener('pointermove',e=>{if(!sdown)return;sptr=skyPos(e);skyHit(sptr)});
+  ['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>{sdown=false;sptr=null}));
+  addEventListener('resize',()=>{if(!$('sky').classList.contains('hidden')&&sk)initSky()});
+})();
+
+/* Kunang-kunang latar */
+function initFireflies(){const w=$('ffs');
+  for(let i=0;i<22;i++){const d=document.createElement('i');d.className='ff';
+    d.style.left=Math.random()*100+'vw';d.style.top=Math.random()*100+'vh';
+    d.style.setProperty('--x',(Math.random()*80-40)+'px');d.style.setProperty('--y',(Math.random()*80-40)+'px');
+    d.style.animationDuration=(5+Math.random()*7)+'s';d.style.animationDelay=(-Math.random()*8)+'s';w.appendChild(d)}}
+initGarden();initFireflies();
+</script>
+</body>
+</html>
